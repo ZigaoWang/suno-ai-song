@@ -36,34 +36,44 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
 });
 
 document.getElementById('previewButton').addEventListener('click', function () {
-    document.getElementById('loading').style.display = 'block';
-    document.getElementById('result').innerHTML = '';
+    const result = document.getElementById('result');
+    const previewButton = document.getElementById('previewButton');
 
-    fetch('/pre_generated', {
-        method: 'GET'
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            document.getElementById('loading').style.display = 'none';
+    if (result.innerHTML) {
+        result.innerHTML = '';
+        previewButton.textContent = 'Preview with Pre-generated Song';
+    } else {
+        document.getElementById('loading').style.display = 'block';
 
-            if (data.error) {
-                document.getElementById('result').innerHTML = `<p>Error: ${data.error}</p>`;
-            } else {
-                displaySongs(data);
-            }
+        fetch('/pre_generated', {
+            method: 'GET'
         })
-        .catch(error => {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
-        });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+
+                if (data.error) {
+                    document.getElementById('result').innerHTML = `<p>Error: ${data.error}</p>`;
+                } else {
+                    displaySongs(data);
+                    previewButton.textContent = 'Close Preview';
+                }
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
+            });
+    }
 });
 
 function displaySongs(songs) {
+    const result = document.getElementById('result');
+    result.innerHTML = '';  // 清空之前的结果
     songs.forEach(song => {
         const songElement = document.createElement('div');
         songElement.classList.add('song');
@@ -81,7 +91,7 @@ function displaySongs(songs) {
                 </div>
             </div>
         `;
-        document.getElementById('result').appendChild(songElement);
+        result.appendChild(songElement);
     });
 }
 
