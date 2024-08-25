@@ -87,28 +87,91 @@ button:hover {
 
 /* Song container styling */
 .song {
+    display: flex;
+    align-items: center;
+    gap: 20px;
     background-color: #f9f9f9;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.song h3 {
-    margin: 0;
-    color: #007aff;
 }
 
 .song img {
-    max-width: 100%;
+    max-width: 100px;
     height: auto;
     border-radius: 8px;
 }
 
-.song audio, .song video {
+.song-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.song-title {
+    font-size: 2em;
+    color: #007aff;
+    flex: 1;
+}
+
+.song-tags {
+    font-size: 1.1em;
+    color: #555;
+}
+
+.song audio {
     width: 100%;
     border-radius: 8px;
+}
+
+.song .show-video {
+    cursor: pointer;
+    font-size: 1.2em;
+    color: #007aff;
+    transition: color 0.3s;
+}
+
+.song .show-video:hover {
+    color: #005bb5;
+}
+
+/* Popup window styling */
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 20px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.popup.show {
+    display: block;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.popup video {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.popup-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 1.5em;
+    color: #007aff;
+    transition: color 0.3s;
+}
+
+.popup-close:hover {
+    color: #005bb5;
 }

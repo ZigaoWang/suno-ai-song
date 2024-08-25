@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Generator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -14,9 +15,16 @@
             <input type="text" id="prompt" name="prompt" required>
             <button type="submit">Generate</button>
         </form>
+        <button id="previewButton">Preview with Pre-generated Song</button>
         <div id="loading" class="loading">Loading...</div>
         <div id="result"></div>
     </div>
+
+    <div id="videoPopup" class="popup">
+        <span class="popup-close" onclick="closePopup()">&times;</span>
+        <video controls id="popupVideo"></video>
+    </div>
+
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
 </html>
