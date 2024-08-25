@@ -74,11 +74,11 @@ document.getElementById('previewButton').addEventListener('click', function () {
 
     if (result.innerHTML) {
         result.innerHTML = '';
-        previewButton.textContent = 'Preview with Pre-generated Song';
+        previewButton.textContent = 'Preview with Cached Songs';
     } else {
         document.getElementById('loading').style.display = 'block';
 
-        fetch('/pre_generated', {
+        fetch('/cached_songs', {
             method: 'GET'
         })
         .then(response => {

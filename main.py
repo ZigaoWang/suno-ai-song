@@ -3,13 +3,34 @@ import requests
 import time
 import dotenv
 import json
-from flask import Flask, render_template, request, jsonify, stream_with_context, Response, send_from_directory
+from flask import Flask, render_template, request, jsonify, stream_with_context, Response
+from flask_sqlalchemy import SQLAlchemy
 
 dotenv.load_dotenv()
 API_KEY = os.getenv("API_KEY")
 key = API_KEY
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///songs.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class Song(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    image_url = db.Column(db.String(500), nullable=False)
+    audio_url = db.Column(db.String(500), nullable=False)
+    video_url = db.Column(db.String(500), nullable=False)
+
+    def to_dict(self):
+        return {
+            'title': self.title,
+            'image_url': self.image_url,
+            'audio_url': self.audio_url,
+            'video_url': self.video_url
+        }
+
+db.create_all()
 
 def get_headers():
     return {
@@ -52,6 +73,20 @@ def submit_song(payload):
     if response_data["code"] != "success":
         raise Exception("提交歌曲生成请求失败")
     return response_data["data"]
+
+def cache_song(song_data):
+    song = Song(
+        title=song_data['title'],
+        image_url=song_data['image_url'],
+        audio_url=song_data['audio_url'],
+        video_url=song_data['video_url']
+    )
+    db.session.add(song)
+    db.session.commit()
+
+def get_cached_songs():
+    songs = Song.query.all()
+    return [song.to_dict() for song in songs]
 
 @app.route('/')
 def index():
@@ -103,6 +138,7 @@ def generate():
                     return
 
                 if task_status == "SUCCESS":
+                    cache_song(task_data['data'])
                     yield f"data: {json.dumps({'result': task_data['data']})}\n\n"
                     return
 
@@ -117,18 +153,11 @@ def generate():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/pre_generated', methods=['GET'])
-def pre_generated():
+@app.route('/cached_songs', methods=['GET'])
+def cached_songs():
     try:
-        pre_generated_folder = 'pre_generated_songs'
-        files = os.listdir(pre_generated_folder)
-        if not files:
-            raise Exception("没有预生成的歌曲文件")
-
-        import random
-        file = random.choice(files)
-        return send_from_directory(pre_generated_folder, file)
-
+        songs = get_cached_songs()
+        return jsonify(songs)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

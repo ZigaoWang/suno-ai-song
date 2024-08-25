@@ -2,3 +2,4 @@
 .idea
 .env
 cache.json
+cached_songs.json
