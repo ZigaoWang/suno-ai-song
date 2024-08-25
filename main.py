@@ -155,6 +155,9 @@ def generate():
         return Response(stream_with_context(generate_status_updates()), content_type='text/event-stream')
 
     except Exception as e:
+        # Log the full stack trace for better debugging
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 @app.route('/cached_songs', methods=['GET'])

@@ -118,7 +118,7 @@ function displaySongs(songs) {
         songElement.addEventListener('click', () => {
             document.querySelectorAll('.song').forEach(el => el.classList.remove('active'));
             songElement.classList.add('active');
-            showPopup(song.video_url, song.metadata.prompt);
+            showPopup(song.video_url, song.lyrics);
         });
         result.appendChild(songElement);
     });
