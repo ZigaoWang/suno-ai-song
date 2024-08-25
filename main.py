@@ -21,13 +21,15 @@ class Song(db.Model):
     image_url = db.Column(db.String(500), nullable=False)
     audio_url = db.Column(db.String(500), nullable=False)
     video_url = db.Column(db.String(500), nullable=False)
+    lyrics = db.Column(db.Text, nullable=False)
 
     def to_dict(self):
         return {
             'title': self.title,
             'image_url': self.image_url,
             'audio_url': self.audio_url,
-            'video_url': self.video_url
+            'video_url': self.video_url,
+            'lyrics': self.lyrics
         }
 
 def get_headers():
@@ -79,7 +81,8 @@ def cache_songs(songs_data):
             title=song_data['title'],
             image_url=song_data['image_url'],
             audio_url=song_data['audio_url'],
-            video_url=song_data['video_url']
+            video_url=song_data['video_url'],
+            lyrics=song_data['metadata']['prompt']
         )
         db.session.add(song)
     db.session.commit()

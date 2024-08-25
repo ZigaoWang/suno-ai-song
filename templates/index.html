@@ -8,27 +8,32 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Music Generator</h1>
-        <form id="generateForm">
-            <label for="prompt">Enter your prompt:</label>
-            <input type="text" id="prompt" name="prompt" required>
-            <button type="submit">Generate</button>
-        </form>
-        <button id="previewButton">Preview with Pre-generated Song</button>
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <div id="status">Generating...</div>
-            <div id="progress">0%</div>
+    <div class="main-container">
+        <div class="left-column">
+            <h1>Music Generator</h1>
+            <form id="generateForm">
+                <label for="prompt">Enter your prompt:</label>
+                <input type="text" id="prompt" name="prompt" required>
+                <button type="submit">Generate</button>
+            </form>
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <div id="status">Generating...</div>
+                <div id="progress">0%</div>
+            </div>
         </div>
-        <div id="result"></div>
+        <div class="middle-column">
+            <h2>Playlist</h2>
+            <div id="result"></div>
+        </div>
+        <div class="right-column">
+            <h2>Now Playing</h2>
+            <div id="nowPlaying">
+                <video controls id="popupVideo"></video>
+                <div id="lyrics"></div>
+            </div>
+        </div>
     </div>
-
-    <div id="videoPopup" class="popup">
-        <span class="popup-close" onclick="closePopup()">&times;</span>
-        <video controls id="popupVideo"></video>
-    </div>
-
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
 </html>
