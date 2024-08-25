@@ -4,6 +4,8 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
     const prompt = document.getElementById('prompt').value;
     document.getElementById('loading').style.display = 'block';
     document.getElementById('result').innerHTML = '';
+    document.getElementById('status').textContent = 'Generating...';
+    document.getElementById('progress').textContent = '0%';
 
     fetch('/generate', {
         method: 'POST',
@@ -14,25 +16,58 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
             'prompt': prompt
         })
     })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            document.getElementById('loading').style.display = 'none';
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.body;
+    })
+    .then(body => {
+        const reader = body.getReader();
+        const decoder = new TextDecoder();
 
-            if (data.error) {
-                document.getElementById('result').innerHTML = `<p>Error: ${data.error}</p>`;
-            } else {
-                displaySongs(data);
-            }
-        })
-        .catch(error => {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
-        });
+        function read() {
+            return reader.read().then(({ value, done }) => {
+                if (done) {
+                    return;
+                }
+
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n\n');
+
+                lines.forEach(line => {
+                    if (line.startsWith('data: ')) {
+                        const data = JSON.parse(line.substring(6));
+                        console.log('Received data:', data);  // Debugging log
+
+                        if (data.error) {
+                            document.getElementById('loading').style.display = 'none';
+                            document.getElementById('result').innerHTML = `<p>Error: ${data.error}</p>`;
+                        } else if (data.result) {
+                            document.getElementById('loading').style.display = 'none';
+                            console.log('Result data:', data.result);  // Debugging log
+                            if (Array.isArray(data.result)) {
+                                displaySongs(data.result);
+                            } else {
+                                displaySongs([data.result]);
+                            }
+                        } else {
+                            document.getElementById('status').textContent = `Status: ${data.status}`;
+                            document.getElementById('progress').textContent = `Progress: ${data.progress}`;
+                        }
+                    }
+                });
+
+                return read();
+            });
+        }
+
+        return read();
+    })
+    .catch(error => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
+    });
 });
 
 document.getElementById('previewButton').addEventListener('click', function () {
@@ -48,26 +83,27 @@ document.getElementById('previewButton').addEventListener('click', function () {
         fetch('/pre_generated', {
             method: 'GET'
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                document.getElementById('loading').style.display = 'none';
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
 
-                if (data.error) {
-                    document.getElementById('result').innerHTML = `<p>Error: ${data.error}</p>`;
-                } else {
-                    displaySongs(data);
-                    previewButton.textContent = 'Close Preview';
-                }
-            })
-            .catch(error => {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
-            });
+            if (data.error) {
+                document.getElementById('result').innerHTML = `<p>Error: ${data.error}</p>`;
+            } else {
+                console.log('Pre-generated data:', data);  // Debugging log
+                displaySongs(data);
+                previewButton.textContent = 'Close Preview';
+            }
+        })
+        .catch(error => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
+        });
     }
 });
 
@@ -75,6 +111,12 @@ function displaySongs(songs) {
     const result = document.getElementById('result');
     result.innerHTML = '';  // 清空之前的结果
     songs.forEach(song => {
+        console.log('Displaying song:', song);  // Debugging log
+        if (!song.image_url || !song.audio_url || !song.video_url) {
+            console.error('Missing data for song:', song);
+            return;
+        }
+
         const songElement = document.createElement('div');
         songElement.classList.add('song');
         songElement.innerHTML = `
