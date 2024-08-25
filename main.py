@@ -30,8 +30,6 @@ class Song(db.Model):
             'video_url': self.video_url
         }
 
-db.create_all()
-
 def get_headers():
     return {
         "Authorization": f"Bearer {key}",
@@ -74,14 +72,16 @@ def submit_song(payload):
         raise Exception("提交歌曲生成请求失败")
     return response_data["data"]
 
-def cache_song(song_data):
-    song = Song(
-        title=song_data['title'],
-        image_url=song_data['image_url'],
-        audio_url=song_data['audio_url'],
-        video_url=song_data['video_url']
-    )
-    db.session.add(song)
+def cache_songs(songs_data):
+    for song_data in songs_data:
+        print("Caching song data:", song_data)  # Debugging line
+        song = Song(
+            title=song_data['title'],
+            image_url=song_data['image_url'],
+            audio_url=song_data['audio_url'],
+            video_url=song_data['video_url']
+        )
+        db.session.add(song)
     db.session.commit()
 
 def get_cached_songs():
@@ -138,7 +138,8 @@ def generate():
                     return
 
                 if task_status == "SUCCESS":
-                    cache_song(task_data['data'])
+                    print("Task data:", task_data)  # Debugging line
+                    cache_songs(task_data['data'])
                     yield f"data: {json.dumps({'result': task_data['data']})}\n\n"
                     return
 
@@ -162,4 +163,6 @@ def cached_songs():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)

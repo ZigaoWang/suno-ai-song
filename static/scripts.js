@@ -1,3 +1,7 @@
+document.addEventListener('DOMContentLoaded', function() {
+    fetchCachedSongs();
+});
+
 document.getElementById('generateForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
@@ -103,6 +107,28 @@ document.getElementById('previewButton').addEventListener('click', function () {
         });
     }
 });
+
+function fetchCachedSongs() {
+    fetch('/cached_songs', {
+        method: 'GET'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.error) {
+            document.getElementById('result').innerHTML = `<p>Error: ${data.error}</p>`;
+        } else {
+            displaySongs(data);
+        }
+    })
+    .catch(error => {
+        document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
+    });
+}
 
 function displaySongs(songs) {
     const result = document.getElementById('result');
