@@ -38,14 +38,12 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
                 lines.forEach(line => {
                     if (line.startsWith('data: ')) {
                         const data = JSON.parse(line.substring(6));
-                        console.log('Received data:', data);  // Debugging log
 
                         if (data.error) {
                             document.getElementById('loading').style.display = 'none';
                             document.getElementById('result').innerHTML = `<p>Error: ${data.error}</p>`;
                         } else if (data.result) {
                             document.getElementById('loading').style.display = 'none';
-                            console.log('Result data:', data.result);  // Debugging log
                             if (Array.isArray(data.result)) {
                                 displaySongs(data.result);
                             } else {
@@ -95,7 +93,6 @@ document.getElementById('previewButton').addEventListener('click', function () {
             if (data.error) {
                 document.getElementById('result').innerHTML = `<p>Error: ${data.error}</p>`;
             } else {
-                console.log('Pre-generated data:', data);  // Debugging log
                 displaySongs(data);
                 previewButton.textContent = 'Close Preview';
             }
@@ -111,7 +108,6 @@ function displaySongs(songs) {
     const result = document.getElementById('result');
     result.innerHTML = '';  // 清空之前的结果
     songs.forEach(song => {
-        console.log('Displaying song:', song);  // Debugging log
         if (!song.image_url || !song.audio_url || !song.video_url) {
             console.error('Missing data for song:', song);
             return;
