@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Music Generator</h1>
+        <form id="generateForm">
+            <label for="prompt">Enter your prompt:</label>
+            <input type="text" id="prompt" name="prompt" required>
+            <button type="submit">Generate</button>
+        </form>
+        <div id="loading" class="loading">Loading...</div>
+        <div id="result"></div>
+    </div>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>

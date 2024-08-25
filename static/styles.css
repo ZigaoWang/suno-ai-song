@@ -1,0 +1,88 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+input, button {
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+}
+
+button {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#loading {
+    display: none;
+    text-align: center;
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: #007BFF;
+}
+
+#result {
+    margin-top: 20px;
+}
+
+.song {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.song h3 {
+    margin: 0 0 10px;
+    color: #007BFF;
+}
+
+.song img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.song audio, .song video {
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 8px;
+}

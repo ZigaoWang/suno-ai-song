@@ -2,18 +2,19 @@ import os
 import requests
 import time
 import dotenv
+from flask import Flask, render_template, request, jsonify
 
 dotenv.load_dotenv()
 API_KEY = os.getenv("API_KEY")
 key = API_KEY
 
+app = Flask(__name__)
 
 def get_headers():
     return {
         "Authorization": f"Bearer {key}",
         "Content-Type": "application/json"
     }
-
 
 def submit_lyrics(prompt):
     url = "https://api.turboai.io/suno/submit/lyrics"
@@ -31,7 +32,6 @@ def submit_lyrics(prompt):
 
     return response_data["data"]
 
-
 def fetch(task_id):
     url = f"https://api.turboai.io/suno/fetch/{task_id}"
 
@@ -43,8 +43,10 @@ def fetch(task_id):
     if response_data.get("code") != "success":
         raise Exception(f"查询失败，响应信息: {response_data}")
 
-    return response_data["data"]
+    # 添加日志以调试问题
+    print(f"Fetched data for task_id {task_id}: {response_data}")
 
+    return response_data["data"]
 
 def submit_song(payload):
     response = requests.post("https://api.turboai.io/suno/submit/music", headers=get_headers(), json=payload)
@@ -53,32 +55,35 @@ def submit_song(payload):
         raise Exception("提交歌曲生成请求失败")
     return response_data["data"]
 
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-def main():
-    prompt = "An upbeat, energetic song about different types of technology gadgets or tools."
+@app.route('/generate', methods=['POST'])
+def generate():
+    prompt = request.form['prompt']
     try:
         lyrics_task_id = submit_lyrics(prompt)
-        print("歌词任务ID:" + lyrics_task_id)
+        print("歌词任务ID:", lyrics_task_id)
         time.sleep(2)
         lyrics = fetch(lyrics_task_id)
-        print("歌词内容:" + lyrics['data']['text'])
+        print("歌词内容:", lyrics['data']['text'])
 
-        # 组装歌曲生成请求
         payload = {
             "prompt": lyrics['data']['text'],
             "tags": "energetic pop",
             "mv": "chirp-v3-5",
-            "title": "Technology Gadgets"
+            "title": prompt  # Use the user's prompt as the song title
         }
 
-        # 提交歌曲生成请求
         song_task_id = submit_song(payload)
-        print("歌曲任务ID:" + song_task_id)
+        print("歌曲任务ID:", song_task_id)
 
-        # 轮询查询歌曲生成状态
         while True:
             task_data = fetch(song_task_id)
             task_status = task_data["status"]
+
+            print(f"歌曲生成状态： {task_status}，请等待10s...")
 
             if task_status == "FAILURE":
                 raise Exception("歌曲生成失败")
@@ -86,20 +91,14 @@ def main():
             if task_status == "SUCCESS":
                 break
 
-            print(f"歌曲生成状态： {task_status}，请等待10s...")
-
             time.sleep(10)
-        # 打印歌曲信息
-        for song in task_data["data"]:
-            print(f"歌曲名称: {song['title']}")
-            print(f"歌曲封面: {song['image_url']}")
-            print(f"音频地址: {song['audio_url']}")
-            print(f"视频地址: {song['video_url']}")
-            print("-" * 40)
+
+        print("歌曲生成成功")
+        return jsonify(task_data["data"])
 
     except Exception as e:
-        print(f"发生错误: {e}")
-
+        print(f"发生错误: {e}")  # 在终端打印错误信息以便调试
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True)
