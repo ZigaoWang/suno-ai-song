@@ -2,11 +2,42 @@ document.addEventListener('DOMContentLoaded', function() {
     fetchCachedSongs();
 });
 
+document.getElementById('licenseForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const license = document.getElementById('license').value;
+
+    fetch('/activate_license', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            'license': license
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(`Error: ${data.error}`);
+        } else {
+            document.getElementById('licenseForm').classList.add('hidden');
+            document.getElementById('generateForm').classList.remove('hidden');
+            document.getElementById('remainingSongs').classList.remove('hidden');
+            document.getElementById('remainingSongs').textContent = `Remaining Songs: ${data.remaining_songs}`;
+        }
+    })
+    .catch(error => {
+        alert(`Error: ${error.message}`);
+    });
+});
+
 document.getElementById('generateForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
     const prompt = document.getElementById('prompt').value;
-    document.getElementById('loading').style.display = 'block';
+    const license = document.getElementById('license').value;
+    document.getElementById('loading').classList.remove('hidden');
     document.getElementById('status').textContent = 'Generating...';
     document.getElementById('progress').textContent = '0%';
 
@@ -16,7 +47,8 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: new URLSearchParams({
-            'prompt': prompt
+            'prompt': prompt,
+            'license': license
         })
     })
     .then(response => {
@@ -32,7 +64,7 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
         function read() {
             return reader.read().then(({ value, done }) => {
                 if (done) {
-                    fetchCachedSongs();  // Refresh the playlist after generating
+                    fetchCachedSongs();
                     return;
                 }
 
@@ -44,10 +76,10 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
                         const data = JSON.parse(line.substring(6));
 
                         if (data.error) {
-                            document.getElementById('loading').style.display = 'none';
+                            document.getElementById('loading').classList.add('hidden');
                             document.getElementById('status').textContent = `Error: ${data.error}`;
                         } else if (data.result) {
-                            document.getElementById('loading').style.display = 'none';
+                            document.getElementById('loading').classList.add('hidden');
                             displaySongs(data.result, true);
                         } else {
                             document.getElementById('status').textContent = `Status: ${data.status}`;
@@ -63,7 +95,7 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
         return read();
     })
     .catch(error => {
-        document.getElementById('loading').style.display = 'none';
+        document.getElementById('loading').classList.add('hidden');
         document.getElementById('status').textContent = `Error: ${error.message}`;
     });
 });
@@ -93,24 +125,21 @@ function fetchCachedSongs() {
 function displaySongs(songs, prepend = false) {
     const result = document.getElementById('result');
     if (prepend) {
-        // If prepend is true, add the new songs at the top
         songs.forEach(song => {
             if (!song.image_url || !song.audio_url || !song.video_url) {
                 console.error('Missing data for song:', song);
                 return;
             }
-
             const songElement = createSongElement(song);
             result.insertBefore(songElement, result.firstChild);
         });
     } else {
-        result.innerHTML = '';  // Clear previous results
+        result.innerHTML = '';
         songs.forEach(song => {
             if (!song.image_url || !song.audio_url || !song.video_url) {
                 console.error('Missing data for song:', song);
                 return;
             }
-
             const songElement = createSongElement(song);
             result.appendChild(songElement);
         });

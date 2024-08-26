@@ -11,12 +11,18 @@
     <div class="main-container">
         <div class="left-column">
             <h1>Suno Music Generator</h1>
-            <form id="generateForm" aria-labelledby="generateFormLabel">
+            <form id="licenseForm" aria-labelledby="licenseFormLabel">
+                <label id="licenseFormLabel" for="license">Enter your license key:</label>
+                <input type="text" id="license" name="license" required aria-required="true">
+                <button type="submit"><i class="fas fa-key"></i>Activate</button>
+            </form>
+            <form id="generateForm" class="hidden" aria-labelledby="generateFormLabel">
                 <label id="generateFormLabel" for="prompt">Enter your prompt:</label>
                 <input type="text" id="prompt" name="prompt" required aria-required="true">
                 <button type="submit"><i class="fas fa-music"></i>Generate</button>
             </form>
-            <div id="loading" class="loading">
+            <div id="remainingSongs" class="hidden"></div>
+            <div id="loading" class="loading hidden">
                 <div class="spinner"></div>
                 <div id="status">Generating...</div>
                 <div id="progress">0%</div>
