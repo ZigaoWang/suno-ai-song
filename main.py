@@ -3,7 +3,9 @@ import requests
 import time
 import dotenv
 import json
-from flask import Flask, render_template, request, jsonify, stream_with_context, Response
+import random
+import string
+from flask import Flask, render_template, request, jsonify, stream_with_context, Response, redirect
 from flask_sqlalchemy import SQLAlchemy
 
 dotenv.load_dotenv()
@@ -14,6 +16,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///songs.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
 
 class Song(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -34,11 +37,29 @@ class Song(db.Model):
             'created_at': self.created_at.isoformat()
         }
 
+
+class License(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    max_songs = db.Column(db.Integer, nullable=False)
+    used_songs = db.Column(db.Integer, default=0)
+    remarks = db.Column(db.String(500), nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    license_id = db.Column(db.Integer, db.ForeignKey('license.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    license = db.relationship('License', backref=db.backref('users', lazy=True))
+
+
 def get_headers():
     return {
         "Authorization": f"Bearer {key}",
         "Content-Type": "application/json"
     }
+
 
 def submit_lyrics(prompt):
     url = "https://api.turboai.io/suno/submit/lyrics"
@@ -56,6 +77,7 @@ def submit_lyrics(prompt):
 
     return response_data["data"]
 
+
 def fetch(task_id):
     url = f"https://api.turboai.io/suno/fetch/{task_id}"
 
@@ -69,6 +91,7 @@ def fetch(task_id):
 
     return response_data["data"]
 
+
 def submit_song(payload):
     response = requests.post("https://api.turboai.io/suno/submit/music", headers=get_headers(), json=payload)
     response_data = response.json()
@@ -76,9 +99,9 @@ def submit_song(payload):
         raise Exception("提交歌曲生成请求失败")
     return response_data["data"]
 
+
 def cache_songs(songs_data):
     for song_data in songs_data:
-        print("Caching song data:", song_data)  # Debugging line
         song = Song(
             title=song_data['title'],
             image_url=song_data['image_url'],
@@ -89,17 +112,76 @@ def cache_songs(songs_data):
         db.session.add(song)
     db.session.commit()
 
+
 def get_cached_songs():
-    songs = Song.query.order_by(Song.created_at.desc()).all()  # Order by created_at descending
+    songs = Song.query.order_by(Song.created_at.desc()).all()
     return [song.to_dict() for song in songs]
+
+
+def generate_license_key():
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if request.method == 'POST':
+        key = generate_license_key()
+        max_songs = int(request.form['max_songs'])
+        remarks = request.form.get('remarks')
+        new_license = License(key=key, max_songs=max_songs, remarks=remarks)
+        db.session.add(new_license)
+        db.session.commit()
+        return redirect('/admin')
+
+    licenses = License.query.all()
+    return render_template('admin.html', licenses=licenses)
+
+
+@app.route('/edit_license', methods=['POST'])
+def edit_license():
+    license_id = request.form['id']
+    max_songs = int(request.form['max_songs'])
+    remarks = request.form.get('remarks')
+
+    license = License.query.get(license_id)
+    if license:
+        license.max_songs = max_songs
+        license.remarks = remarks
+        db.session.commit()
+
+    return redirect('/admin')
+
+
+@app.route('/activate_license', methods=['POST'])
+def activate_license():
+    license_key = request.form['license']
+    license = License.query.filter_by(key=license_key).first()
+
+    if not license:
+        return jsonify({"error": "Invalid license key"}), 400
+
+    remaining_songs = license.max_songs - license.used_songs
+    return jsonify({"remaining_songs": remaining_songs})
+
+
 @app.route('/generate', methods=['POST'])
 def generate():
+    license_key = request.form['license']
     prompt = request.form['prompt']
+
+    license = License.query.filter_by(key=license_key).first()
+
+    if not license:
+        return jsonify({"error": "Invalid license key"}), 400
+
+    if license.used_songs >= license.max_songs:
+        return jsonify({"error": "License limit reached"}), 400
+
     try:
         lyrics_task_id = submit_lyrics(prompt)
         time.sleep(2)
@@ -115,7 +197,7 @@ def generate():
 
         song_task_id = submit_song(payload)
 
-        max_retries = 100  # 设置最大重试次数（2秒检查一次，总计3分钟20秒）
+        max_retries = 100
         retries = 0
 
         def generate_status_updates():
@@ -127,12 +209,11 @@ def generate():
                 task_status = task_data["status"]
                 task_progress = task_data.get("progress", "0%")
 
-                # Progress increment logic
                 if task_status != "SUCCESS" and task_status != "FAILURE":
                     if progress < 90:
-                        progress = min(progress + 2, 90)  # Fast progress to 90%
+                        progress = min(progress + 2, 90)
                     else:
-                        progress = min(progress + 1, 95)  # Slow progress from 90% to 95%
+                        progress = min(progress + 1, 95)
                     task_progress = f"{progress}%"
 
                 yield f"data: {json.dumps({'status': task_status, 'progress': task_progress})}\n\n"
@@ -142,12 +223,12 @@ def generate():
                     return
 
                 if task_status == "SUCCESS":
-                    print("Task data:", task_data)  # Debugging line
                     cache_songs(task_data['data'])
+                    license.used_songs += 1
+                    db.session.commit()
                     yield f"data: {json.dumps({'result': task_data['data']})}\n\n"
                     return
 
-                # Random delay between 1 and 2 seconds
                 time.sleep(1 + (retries % 2))
                 retries += 1
 
@@ -156,24 +237,23 @@ def generate():
         return Response(stream_with_context(generate_status_updates()), content_type='text/event-stream')
 
     except Exception as e:
-        # Log the full stack trace for better debugging
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/cached_songs', methods=['GET'])
 def cached_songs():
     try:
         songs = get_cached_songs()
-        print("Cached songs fetched:", songs)  # Debugging line
         return jsonify(songs)
     except Exception as e:
-        # Log the full stack trace for better debugging
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()  # Recreate tables with new schema
+        db.create_all()
     app.run(debug=True)
