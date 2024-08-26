@@ -8,6 +8,7 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
     const prompt = document.getElementById('prompt').value;
     document.getElementById('loading').style.display = 'block';
     document.getElementById('status').textContent = 'Generating...';
+    document.getElementById('progress').textContent = '0%';
 
     fetch('/generate', {
         method: 'POST',
