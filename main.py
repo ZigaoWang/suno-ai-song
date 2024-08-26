@@ -109,7 +109,6 @@ def generate():
 
         payload = {
             "prompt": lyrics['data']['text'],
-            "tags": "energetic pop",
             "mv": "chirp-v3-5",
             "title": prompt
         }
@@ -176,6 +175,5 @@ def cached_songs():
 
 if __name__ == "__main__":
     with app.app_context():
-        db.drop_all()  # Drop all tables
         db.create_all()  # Recreate tables with new schema
     app.run(debug=True)

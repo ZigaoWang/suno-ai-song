@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Generator</title>
+    <title>Suno Music Generator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+    <header>Suno Music Generator</header>
     <div class="main-container">
         <div class="left-column">
-            <h1>Music Generator</h1>
             <form id="generateForm">
                 <label for="prompt">Enter your prompt:</label>
                 <input type="text" id="prompt" name="prompt" required>

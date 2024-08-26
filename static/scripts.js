@@ -8,7 +8,6 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
     const prompt = document.getElementById('prompt').value;
     document.getElementById('loading').style.display = 'block';
     document.getElementById('status').textContent = 'Generating...';
-    document.getElementById('progress').textContent = '0%';
 
     fetch('/generate', {
         method: 'POST',
@@ -143,10 +142,4 @@ function showPopup(videoUrl, lyrics) {
     const lyricsContainer = document.getElementById('lyrics');
     video.src = videoUrl;
     lyricsContainer.textContent = lyrics;
-}
-
-function closePopup() {
-    const video = document.getElementById('popupVideo');
-    video.pause();
-    video.src = '';
 }
