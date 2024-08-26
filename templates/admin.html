@@ -4,39 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Admin Dashboard</h1>
-    <form class="license-form" method="POST" action="/admin">
-        <label for="max_songs">Max Songs:</label>
-        <input type="number" id="max_songs" name="max_songs" required>
-        <label for="remarks">Remarks (optional):</label>
-        <input type="text" id="remarks" name="remarks">
-        <button type="submit">Add License</button>
-    </form>
-    <div class="license-list">
-        <h2>Existing Licenses</h2>
-        <ul>
-            {% for license in licenses %}
-            <li>
-                <strong>{{ license.key }}</strong> - Used: {{ license.used_songs }}/{{ license.max_songs }} - Remarks: {{ license.remarks }}
-                <button onclick="showEditForm({{ license.id }}, '{{ license.max_songs }}', '{{ license.remarks }}')">Edit</button>
-                <form class="edit-form" id="edit-form-{{ license.id }}" method="POST" action="/edit_license">
-                    <input type="hidden" name="id" value="{{ license.id }}">
-                    <label for="max_songs">Max Songs:</label>
-                    <input type="number" name="max_songs" value="{{ license.max_songs }}" required>
-                    <label for="remarks">Remarks (optional):</label>
-                    <input type="text" name="remarks" value="{{ license.remarks }}">
-                    <button type="submit">Update</button>
-                </form>
-            </li>
-            {% endfor %}
-        </ul>
+    <div class="admin-container">
+        <h1>Admin Dashboard</h1>
+        <form class="license-form" method="POST" action="/admin">
+            <label for="max_songs">Max Songs:</label>
+            <input type="number" id="max_songs" name="max_songs" required>
+            <label for="remarks">Remarks (optional):</label>
+            <input type="text" id="remarks" name="remarks">
+            <button type="submit">Add License</button>
+        </form>
+        <div class="license-list">
+            <h2>Existing Licenses</h2>
+            <ul>
+                {% for license in licenses %}
+                <li>
+                    <strong>{{ license.key }}</strong> - Used: {{ license.used_songs }}/{{ license.max_songs }} - Remarks: {{ license.remarks }}
+                    <button onclick="showEditForm({{ license.id }}, '{{ license.max_songs }}', '{{ license.remarks }}')">Edit</button>
+                    <form class="edit-form hidden" id="edit-form-{{ license.id }}" method="POST" action="/edit_license">
+                        <input type="hidden" name="id" value="{{ license.id }}">
+                        <label for="max_songs">Max Songs:</label>
+                        <input type="number" name="max_songs" value="{{ license.max_songs }}" required>
+                        <label for="remarks">Remarks (optional):</label>
+                        <input type="text" name="remarks" value="{{ license.remarks }}">
+                        <button type="submit">Update</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <a href="/logout">Logout</a>
     </div>
     <script>
         function showEditForm(id, max_songs, remarks) {
             var form = document.getElementById('edit-form-' + id);
-            form.style.display = 'block';
+            form.classList.toggle('hidden');
         }
     </script>
 </body>

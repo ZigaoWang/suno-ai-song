@@ -5,8 +5,9 @@ import dotenv
 import json
 import random
 import string
-from flask import Flask, render_template, request, jsonify, stream_with_context, Response, redirect
+from flask import Flask, render_template, request, jsonify, stream_with_context, Response, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
+from functools import wraps
 
 dotenv.load_dotenv()
 API_KEY = os.getenv("API_KEY")
@@ -15,7 +16,11 @@ key = API_KEY
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///songs.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")
 db = SQLAlchemy(app)
+
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
 
 class Song(db.Model):
@@ -122,12 +127,41 @@ def generate_license_key():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['logged_in'] = True
+            return redirect(url_for('admin'))
+        else:
+            return render_template('login.html', error="Invalid credentials")
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('login'))
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 
 @app.route('/admin', methods=['GET', 'POST'])
+@login_required
 def admin():
     if request.method == 'POST':
         key = generate_license_key()
@@ -143,6 +177,7 @@ def admin():
 
 
 @app.route('/edit_license', methods=['POST'])
+@login_required
 def edit_license():
     license_id = request.form['id']
     max_songs = int(request.form['max_songs'])
