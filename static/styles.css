@@ -88,6 +88,14 @@ button {
     font-size: 1em;
     cursor: pointer;
     transition: transform 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+button i {
+    font-size: 1.2em;
 }
 
 button:hover {

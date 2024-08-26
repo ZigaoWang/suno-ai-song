@@ -11,10 +11,10 @@
     <div class="main-container">
         <div class="left-column">
             <h1>Suno Music Generator</h1>
-            <form id="generateForm">
-                <label for="prompt">Enter your prompt:</label>
-                <input type="text" id="prompt" name="prompt" required>
-                <button type="submit">Generate</button>
+            <form id="generateForm" aria-labelledby="generateFormLabel">
+                <label id="generateFormLabel" for="prompt">Enter your prompt:</label>
+                <input type="text" id="prompt" name="prompt" required aria-required="true">
+                <button type="submit"><i class="fas fa-music"></i>Generate</button>
             </form>
             <div id="loading" class="loading">
                 <div class="spinner"></div>
