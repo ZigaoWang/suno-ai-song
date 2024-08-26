@@ -7,7 +7,6 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
 
     const prompt = document.getElementById('prompt').value;
     document.getElementById('loading').style.display = 'block';
-    document.getElementById('result').innerHTML = '';
     document.getElementById('status').textContent = 'Generating...';
     document.getElementById('progress').textContent = '0%';
 
@@ -33,6 +32,7 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
         function read() {
             return reader.read().then(({ value, done }) => {
                 if (done) {
+                    fetchCachedSongs();  // Refresh the playlist after generating
                     return;
                 }
 
@@ -45,14 +45,10 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
 
                         if (data.error) {
                             document.getElementById('loading').style.display = 'none';
-                            document.getElementById('result').innerHTML = `<p>Error: ${data.error}</p>`;
+                            document.getElementById('status').textContent = `Error: ${data.error}`;
                         } else if (data.result) {
                             document.getElementById('loading').style.display = 'none';
-                            if (Array.isArray(data.result)) {
-                                displaySongs(data.result);
-                            } else {
-                                displaySongs([data.result]);
-                            }
+                            displaySongs(data.result, true);
                         } else {
                             document.getElementById('status').textContent = `Status: ${data.status}`;
                             document.getElementById('progress').textContent = `Progress: ${data.progress}`;
@@ -68,7 +64,7 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
     })
     .catch(error => {
         document.getElementById('loading').style.display = 'none';
-        document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
+        document.getElementById('status').textContent = `Error: ${error.message}`;
     });
 });
 
@@ -94,34 +90,52 @@ function fetchCachedSongs() {
     });
 }
 
-function displaySongs(songs) {
+function displaySongs(songs, prepend = false) {
     const result = document.getElementById('result');
-    result.innerHTML = '';  // 清空之前的结果
-    songs.forEach(song => {
-        if (!song.image_url || !song.audio_url || !song.video_url) {
-            console.error('Missing data for song:', song);
-            return;
-        }
+    if (prepend) {
+        // If prepend is true, add the new songs at the top
+        songs.forEach(song => {
+            if (!song.image_url || !song.audio_url || !song.video_url) {
+                console.error('Missing data for song:', song);
+                return;
+            }
 
-        const songElement = document.createElement('div');
-        songElement.classList.add('song');
-        songElement.innerHTML = `
-            <img src="${song.image_url}" alt="Song Image">
-            <div class="song-details">
-                <div class="song-title">${song.title}</div>
-                <audio controls>
-                    <source src="${song.audio_url}" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-            </div>
-        `;
-        songElement.addEventListener('click', () => {
-            document.querySelectorAll('.song').forEach(el => el.classList.remove('active'));
-            songElement.classList.add('active');
-            showPopup(song.video_url, song.lyrics);
+            const songElement = createSongElement(song);
+            result.insertBefore(songElement, result.firstChild);
         });
-        result.appendChild(songElement);
+    } else {
+        result.innerHTML = '';  // Clear previous results
+        songs.forEach(song => {
+            if (!song.image_url || !song.audio_url || !song.video_url) {
+                console.error('Missing data for song:', song);
+                return;
+            }
+
+            const songElement = createSongElement(song);
+            result.appendChild(songElement);
+        });
+    }
+}
+
+function createSongElement(song) {
+    const songElement = document.createElement('div');
+    songElement.classList.add('song');
+    songElement.innerHTML = `
+        <img src="${song.image_url}" alt="Song Image">
+        <div class="song-details">
+            <div class="song-title">${song.title}</div>
+            <audio controls>
+                <source src="${song.audio_url}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    `;
+    songElement.addEventListener('click', () => {
+        document.querySelectorAll('.song').forEach(el => el.classList.remove('active'));
+        songElement.classList.add('active');
+        showPopup(song.video_url, song.lyrics);
     });
+    return songElement;
 }
 
 function showPopup(videoUrl, lyrics) {

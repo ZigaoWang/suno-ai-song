@@ -22,6 +22,7 @@ class Song(db.Model):
     audio_url = db.Column(db.String(500), nullable=False)
     video_url = db.Column(db.String(500), nullable=False)
     lyrics = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     def to_dict(self):
         return {
@@ -29,7 +30,8 @@ class Song(db.Model):
             'image_url': self.image_url,
             'audio_url': self.audio_url,
             'video_url': self.video_url,
-            'lyrics': self.lyrics
+            'lyrics': self.lyrics,
+            'created_at': self.created_at.isoformat()
         }
 
 def get_headers():
@@ -88,7 +90,7 @@ def cache_songs(songs_data):
     db.session.commit()
 
 def get_cached_songs():
-    songs = Song.query.all()
+    songs = Song.query.order_by(Song.created_at.desc()).all()  # Order by created_at descending
     return [song.to_dict() for song in songs]
 
 @app.route('/')
@@ -164,11 +166,16 @@ def generate():
 def cached_songs():
     try:
         songs = get_cached_songs()
+        print("Cached songs fetched:", songs)  # Debugging line
         return jsonify(songs)
     except Exception as e:
+        # Log the full stack trace for better debugging
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()
+        db.drop_all()  # Drop all tables
+        db.create_all()  # Recreate tables with new schema
     app.run(debug=True)
