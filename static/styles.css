@@ -1,0 +1,243 @@
+/* Reset some basic styles */
+body, h1, h2, h3, p, ul, ol, li, form, input, button {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Apply the Apple UI font stack */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #121212;
+    color: #ffffff;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.main-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.left-column, .middle-column, .right-column {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+}
+
+.left-column, .right-column {
+    flex: 1.3;
+}
+
+.middle-column {
+    flex: 2; /* Make the playlist column wider */
+    background-color: #2e2e2e;
+    border-left: 1px solid #333;
+    border-right: 1px solid #333;
+}
+
+h1, h2 {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #ffffff;
+}
+
+/* Form and buttons styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+label {
+    font-size: 1.2em;
+    color: #ccc;
+}
+
+input[type="text"] {
+    padding: 10px;
+    border: 2px solid #333;
+    border-radius: 8px;
+    font-size: 1em;
+    background-color: #2e2e2e;
+    color: #fff;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus {
+    border-color: #007aff;
+    outline: none;
+}
+
+button {
+    padding: 12px;
+    background-color: #007aff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+button:hover {
+    transform: translateY(-3px);
+}
+
+/* Loading text styling */
+#loading {
+    display: none;
+    text-align: center;
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: #00ffcc;
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 4px solid #333;
+    border-top: 4px solid #00ffcc;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Result container styling */
+#result {
+    width: 100%;
+}
+
+/* Song container styling */
+.song {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #3e3e3e;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: background-color, transform 0.3s ease-in-out;
+    cursor: pointer;
+}
+
+.song:hover {
+    transform: translateY(-3px);
+}
+
+.song.active {
+    background-color: #007aff;
+}
+
+.song img {
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.song-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.song-title {
+    font-size: 1em;
+    color: #ffffff;
+    flex: 1;
+}
+
+.song audio {
+    width: 100%;
+    border-radius: 8px;
+}
+
+/* Now Playing styling */
+#nowPlaying {
+    width: 100%;
+}
+
+#nowPlaying video {
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+#lyrics {
+    margin-top: 20px;
+    font-size: 1em;
+    color: #ccc;
+    white-space: pre-wrap; /* Preserve line breaks */
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .left-column, .middle-column, .right-column {
+        padding: 15px;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .middle-column {
+        border-left: none;
+        border-right: none;
+    }
+
+    h1, h2 {
+        font-size: 1.2em;
+    }
+
+    form {
+        gap: 5px;
+    }
+
+    label {
+        font-size: 1em;
+    }
+
+    input[type="text"] {
+        font-size: 0.9em;
+        padding: 8px;
+    }
+
+    button {
+        padding: 10px;
+        font-size: 0.9em;
+    }
+
+    #loading {
+        font-size: 1em;
+    }
+
+    .song img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .song-title {
+        font-size: 0.9em;
+    }
+}
