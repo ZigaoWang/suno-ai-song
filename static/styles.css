@@ -301,3 +301,27 @@ form {
 .hidden {
     display: none;
 }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+thead {
+    background-color: #444;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #333;
+}
+
+tr:hover {
+    background-color: #555;
+}
+
+form.edit-form {
+    margin-top: 10px;
+}

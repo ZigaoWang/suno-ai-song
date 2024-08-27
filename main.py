@@ -124,7 +124,7 @@ def get_cached_songs():
 
 
 def generate_license_key():
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=5))
 
 
 def login_required(f):
@@ -133,6 +133,7 @@ def login_required(f):
         if 'logged_in' not in session:
             return redirect(url_for('login'))
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -187,6 +188,19 @@ def edit_license():
     if license:
         license.max_songs = max_songs
         license.remarks = remarks
+        db.session.commit()
+
+    return redirect('/admin')
+
+
+@app.route('/delete_license', methods=['POST'])
+@login_required
+def delete_license():
+    license_id = request.form['id']
+    license = License.query.get(license_id)
+
+    if license:
+        db.session.delete(license)
         db.session.commit()
 
     return redirect('/admin')

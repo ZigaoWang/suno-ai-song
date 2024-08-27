@@ -18,22 +18,40 @@
         </form>
         <div class="license-list">
             <h2>Existing Licenses</h2>
-            <ul>
-                {% for license in licenses %}
-                <li>
-                    <strong>{{ license.key }}</strong> - Used: {{ license.used_songs }}/{{ license.max_songs }} - Remarks: {{ license.remarks }}
-                    <button onclick="showEditForm({{ license.id }}, '{{ license.max_songs }}', '{{ license.remarks }}')">Edit</button>
-                    <form class="edit-form hidden" id="edit-form-{{ license.id }}" method="POST" action="/edit_license">
-                        <input type="hidden" name="id" value="{{ license.id }}">
-                        <label for="max_songs">Max Songs:</label>
-                        <input type="number" name="max_songs" value="{{ license.max_songs }}" required>
-                        <label for="remarks">Remarks (optional):</label>
-                        <input type="text" name="remarks" value="{{ license.remarks }}">
-                        <button type="submit">Update</button>
-                    </form>
-                </li>
-                {% endfor %}
-            </ul>
+            <table>
+                <thead>
+                    <tr>
+                        <th>License Key</th>
+                        <th>Used/Max Songs</th>
+                        <th>Remarks</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for license in licenses %}
+                    <tr>
+                        <td>{{ license.key }}</td>
+                        <td>{{ license.used_songs }}/{{ license.max_songs }}</td>
+                        <td>{{ license.remarks }}</td>
+                        <td>
+                            <button onclick="showEditForm({{ license.id }}, '{{ license.max_songs }}', '{{ license.remarks }}')">Edit</button>
+                            <form class="edit-form hidden" id="edit-form-{{ license.id }}" method="POST" action="/edit_license">
+                                <input type="hidden" name="id" value="{{ license.id }}">
+                                <label for="max_songs">Max Songs:</label>
+                                <input type="number" name="max_songs" value="{{ license.max_songs }}" required>
+                                <label for="remarks">Remarks (optional):</label>
+                                <input type="text" name="remarks" value="{{ license.remarks }}">
+                                <button type="submit">Update</button>
+                            </form>
+                            <form method="POST" action="/delete_license" onsubmit="return confirm('Are you sure you want to delete this license?');">
+                                <input type="hidden" name="id" value="{{ license.id }}">
+                                <button type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
         <a href="/logout">Logout</a>
     </div>
