@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     fetchCachedSongs();
+    checkLicense();
 });
 
 document.getElementById('licenseForm').addEventListener('submit', function (e) {
@@ -21,10 +22,12 @@ document.getElementById('licenseForm').addEventListener('submit', function (e) {
         if (data.error) {
             alert(`Error: ${data.error}`);
         } else {
+            localStorage.setItem('license', license);
             document.getElementById('licenseForm').classList.add('hidden');
             document.getElementById('generateForm').classList.remove('hidden');
             document.getElementById('remainingSongs').classList.remove('hidden');
             document.getElementById('remainingSongs').textContent = `Remaining Songs: ${data.remaining_songs}`;
+            document.getElementById('clearLicense').classList.remove('hidden');
         }
     })
     .catch(error => {
@@ -36,7 +39,7 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
     e.preventDefault();
 
     const prompt = document.getElementById('prompt').value;
-    const license = document.getElementById('license').value;
+    const license = localStorage.getItem('license');
     document.getElementById('loading').classList.remove('hidden');
     document.getElementById('status').textContent = 'Generating...';
     document.getElementById('progress').textContent = '0%';
@@ -99,6 +102,46 @@ document.getElementById('generateForm').addEventListener('submit', function (e) 
         document.getElementById('status').textContent = `Error: ${error.message}`;
     });
 });
+
+document.getElementById('clearLicense').addEventListener('click', function() {
+    localStorage.removeItem('license');
+    document.getElementById('licenseForm').classList.remove('hidden');
+    document.getElementById('generateForm').classList.add('hidden');
+    document.getElementById('remainingSongs').classList.add('hidden');
+    document.getElementById('clearLicense').classList.add('hidden');
+});
+
+function checkLicense() {
+    const license = localStorage.getItem('license');
+    if (license) {
+        fetch('/activate_license', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                'license': license
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(`Error: ${data.error}`);
+                localStorage.removeItem('license');
+            } else {
+                document.getElementById('licenseForm').classList.add('hidden');
+                document.getElementById('generateForm').classList.remove('hidden');
+                document.getElementById('remainingSongs').classList.remove('hidden');
+                document.getElementById('remainingSongs').textContent = `Remaining Songs: ${data.remaining_songs}`;
+                document.getElementById('clearLicense').classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            alert(`Error: ${error.message}`);
+            localStorage.removeItem('license');
+        });
+    }
+}
 
 function fetchCachedSongs() {
     fetch('/cached_songs', {
