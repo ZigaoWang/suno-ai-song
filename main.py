@@ -71,7 +71,7 @@ def get_headers():
 
 def submit_lyrics(prompt):
     messages = [
-        {"role": "system", "content": "你是中文歌曲作词大师，专注于把我提供给你的文章或者描述转化为标准的歌词"},
+        {"role": "system", "content": "You are a lyrics writer, You need to write a song lyrics for the prompt given, do not say anything else, only give the lyrics. Use the language the prompt is in for the lyrics."},
         {"role": "user", "content": prompt}
     ]
 
