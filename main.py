@@ -8,6 +8,7 @@ import string
 from flask import Flask, render_template, request, jsonify, stream_with_context, Response, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
+from openai import OpenAI
 
 dotenv.load_dotenv()
 API_KEY = os.getenv("API_KEY")
@@ -22,6 +23,8 @@ db = SQLAlchemy(app)
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'), base_url=OPENAI_BASE_URL)
 
 class Song(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -67,20 +70,17 @@ def get_headers():
 
 
 def submit_lyrics(prompt):
-    url = "https://api.turboai.io/suno/submit/lyrics"
-    data = {
-        "prompt": prompt
-    }
+    messages = [
+        {"role": "system", "content": "你是中文歌曲作词大师，专注于把我提供给你的文章或者描述转化为标准的歌词"},
+        {"role": "user", "content": prompt}
+    ]
 
-    response = requests.post(url, headers=get_headers(), json=data)
-    if response.status_code != 200:
-        raise Exception(f"请求失败，状态码: {response.status_code}, 错误信息: {response.text}")
-
-    response_data = response.json()
-    if response_data.get("code") != "success":
-        raise Exception(f"提交失败，响应信息: {response_data}")
-
-    return response_data["data"]
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        max_tokens=2000
+    )
+    return completion.choices[0].message.content
 
 
 def fetch(task_id):
@@ -232,21 +232,19 @@ def generate():
         return jsonify({"error": "License limit reached"}), 400
 
     try:
-        lyrics_task_id = submit_lyrics(prompt)
-        time.sleep(2)
-        lyrics = fetch(lyrics_task_id)
-        if lyrics['data'] is None:
+        lyrics = submit_lyrics(prompt)
+        if lyrics is None:
             raise Exception("歌词生成失败")
-
+        print(lyrics)
         payload = {
-            "prompt": lyrics['data']['text'],
+            "prompt": lyrics,
             "mv": "chirp-v3-5",
             "title": prompt
         }
 
         song_task_id = submit_song(payload)
 
-        max_retries = 100
+        max_retries = 50
         retries = 0
 
         def generate_status_updates():
