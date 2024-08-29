@@ -84,7 +84,7 @@ def submit_lyrics(prompt):
 
 
 def fetch(task_id):
-    url = f"https://api.turboai.io/suno/fetch/{task_id}"
+    url = f"https://api.turboai.one/suno/fetch/{task_id}"
 
     response = requests.get(url, headers=get_headers())
     if response.status_code != 200:
@@ -98,7 +98,7 @@ def fetch(task_id):
 
 
 def submit_song(payload):
-    response = requests.post("https://api.turboai.io/suno/submit/music", headers=get_headers(), json=payload)
+    response = requests.post("https://api.turboai.one/suno/submit/music", headers=get_headers(), json=payload)
     response_data = response.json()
     if response_data["code"] != "success":
         raise Exception("提交歌曲生成请求失败")
