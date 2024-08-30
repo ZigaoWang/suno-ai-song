@@ -2,6 +2,14 @@
 
 We value contributions to the project! If you'd like to try out the application but don't have a license, you can get 100 credits (equivalent to 200 songs) for free by following these steps:
 
+### Video Demo
+
+
+
+https://github.com/user-attachments/assets/4d393f12-baeb-4824-a79d-124d01f55959
+
+
+
 ### Steps to Get a Free License
 
 1. **Fork the Repository**: Fork the project repository to your GitHub account.
