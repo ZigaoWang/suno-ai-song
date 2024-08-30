@@ -3,3 +3,4 @@
 .env
 instance/songs.db
 songs.db
+.DS_Store
