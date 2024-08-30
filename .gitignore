@@ -2,3 +2,4 @@
 .idea
 .env
 instance/songs.db
+songs.db
