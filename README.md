@@ -3,8 +3,8 @@
 Welcome to the Suno Music Generator! This application allows users to generate music based on text prompts using Suno's `chirp-v3-5` model from Turbo AI from [turboai.io](https://turboai.io). It includes a frontend interface for inputting prompts and playing generated songs, as well as an admin dashboard for managing licenses.
 
 > [!NOTE]
-> # Do You Want to Get 200 Songs for Free?
-> We value contributions to the project! If you'd like to try out the application but don't have a license, you can generate 200 songs for free by opening a PR. Check [this](LICENSE_REQUESTS_INSTRUCTIONS) out for more information.
+> ### Do You Want to Get 200 Songs for Free?
+> We value contributions to the project! If you'd like to try out the application but don't have a license, you can generate 200 songs for free by opening a PR. Check [this](LICENSE_REQUESTS_INSTRUCTIONS.md) out for more information.
 
 ## Features
 
