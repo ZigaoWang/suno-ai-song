@@ -11,8 +11,9 @@ We value contributions to the project! If you'd like to try out the application 
 3. **Add Your Details**: Append your details to the file using the following format:
 
     ```markdown
-    - **GitHub Username**: [Your GitHub Username]
-      **Feedback**: [Any feedback you have about the project]
+    **GitHub Username**: [Your GitHub Username]
+    **Feedback**: [Any feedback you have about the project]
+    ---
     ```
 
 4. **Open a Pull Request**: Once you've added your details, open a pull request (PR) to the main repository with the title `[Request Free License] Your GitHub Username`.
@@ -24,8 +25,9 @@ We value contributions to the project! If you'd like to try out the application 
 **Content of `LICENSE_REQUESTS.md`**:
 
 ```markdown
-- **GitHub Username**: ZigaoWang
-  **Feedback**: The project looks great! I have some ideas for enhancing the user experience.
+**GitHub Username**: ZigaoWang
+**Feedback**: The project looks great! I have some ideas for enhancing the user experience.
+---
 ```
 
 ### Receiving Your License
