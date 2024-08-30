@@ -12,7 +12,9 @@ We value contributions to the project! If you'd like to try out the application 
 
     ```markdown
     **GitHub Username**: [Your GitHub Username]
+    
     **Feedback**: [Any feedback you have about the project]
+    
     ---
     ```
 
@@ -26,7 +28,9 @@ We value contributions to the project! If you'd like to try out the application 
 
 ```markdown
 **GitHub Username**: ZigaoWang
+
 **Feedback**: The project looks great! I have some ideas for enhancing the user experience.
+
 ---
 ```
 
