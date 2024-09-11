@@ -45,7 +45,6 @@ class Song(db.Model):
             'created_at': self.created_at.isoformat()
         }
 
-
 class License(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(100), unique=True, nullable=False)
@@ -54,13 +53,11 @@ class License(db.Model):
     remarks = db.Column(db.String(500), nullable=True)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     license_id = db.Column(db.Integer, db.ForeignKey('license.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     license = db.relationship('License', backref=db.backref('users', lazy=True))
-
 
 def get_headers():
     return {
@@ -68,10 +65,22 @@ def get_headers():
         "Content-Type": "application/json"
     }
 
+def generate_song_title(lyrics):
+    messages = [
+        {"role": "system", "content": "You are a song title generator. Based on the given lyrics, create a catchy and appropriate title for the song. Provide only the title, nothing else."},
+        {"role": "user", "content": f"Generate a title for this song:\n\n{lyrics}. Give me only the title, no other words. Make it short and no special symbols."}
+    ]
+
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        max_tokens=50
+    )
+    return completion.choices[0].message.content.strip()
 
 def submit_lyrics(prompt):
     messages = [
-        {"role": "system", "content": "You are a lyrics writer, You need to write a song lyrics for the prompt given, do not say anything else, only give the lyrics. Use the language the prompt is in for the lyrics."},
+        {"role": "system", "content": "You are a lyrics writer. Write song lyrics for the given prompt. Do not say anything else, only provide the lyrics. Use the language the prompt is in for the lyrics."},
         {"role": "user", "content": prompt}
     ]
 
@@ -80,8 +89,12 @@ def submit_lyrics(prompt):
         messages=messages,
         max_tokens=2000
     )
-    return completion.choices[0].message.content
+    lyrics = completion.choices[0].message.content
 
+    # Generate title based on the lyrics
+    title = generate_song_title(lyrics)
+
+    return lyrics, title
 
 def fetch(task_id):
     url = f"https://api.turboai.one/suno/fetch/{task_id}"
@@ -96,14 +109,12 @@ def fetch(task_id):
 
     return response_data["data"]
 
-
 def submit_song(payload):
     response = requests.post("https://api.turboai.one/suno/submit/music", headers=get_headers(), json=payload)
     response_data = response.json()
     if response_data["code"] != "success":
         raise Exception("提交歌曲生成请求失败")
     return response_data["data"]
-
 
 def cache_songs(songs_data):
     for song_data in songs_data:
@@ -117,15 +128,12 @@ def cache_songs(songs_data):
         db.session.add(song)
     db.session.commit()
 
-
 def get_cached_songs():
     songs = Song.query.order_by(Song.created_at.desc()).all()
     return [song.to_dict() for song in songs]
 
-
 def generate_license_key():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=5))
-
 
 def login_required(f):
     @wraps(f)
@@ -133,9 +141,7 @@ def login_required(f):
         if 'logged_in' not in session:
             return redirect(url_for('login'))
         return f(*args, **kwargs)
-
     return decorated_function
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -149,17 +155,14 @@ def login():
             return render_template('login.html', error="Invalid credentials")
     return render_template('login.html')
 
-
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
     return redirect(url_for('login'))
 
-
 @app.route('/')
 def index():
     return render_template('index.html')
-
 
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
@@ -176,7 +179,6 @@ def admin():
     licenses = License.query.all()
     return render_template('admin.html', licenses=licenses)
 
-
 @app.route('/edit_license', methods=['POST'])
 @login_required
 def edit_license():
@@ -192,7 +194,6 @@ def edit_license():
 
     return redirect('/admin')
 
-
 @app.route('/delete_license', methods=['POST'])
 @login_required
 def delete_license():
@@ -205,7 +206,6 @@ def delete_license():
 
     return redirect('/admin')
 
-
 @app.route('/activate_license', methods=['POST'])
 def activate_license():
     license_key = request.form['license']
@@ -216,7 +216,6 @@ def activate_license():
 
     remaining_songs = license.max_songs - license.used_songs
     return jsonify({"remaining_songs": remaining_songs})
-
 
 @app.route('/generate', methods=['POST'])
 def generate():
@@ -232,14 +231,15 @@ def generate():
         return jsonify({"error": "License limit reached"}), 400
 
     try:
-        lyrics = submit_lyrics(prompt)
+        lyrics, title = submit_lyrics(prompt)
         if lyrics is None:
             raise Exception("歌词生成失败")
         print(lyrics)
+        print(f"Generated title: {title}")
         payload = {
             "prompt": lyrics,
             "mv": "chirp-v3-5",
-            "title": prompt
+            "title": title
         }
 
         song_task_id = submit_song(payload)
@@ -288,7 +288,6 @@ def generate():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-
 @app.route('/cached_songs', methods=['GET'])
 def cached_songs():
     try:
@@ -298,7 +297,6 @@ def cached_songs():
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
-
 
 if __name__ == "__main__":
     with app.app_context():
